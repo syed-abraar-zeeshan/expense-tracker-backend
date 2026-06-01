@@ -17,7 +17,8 @@ const expenseSchema = new mongoose.Schema({
         min: [0, 'Amount cannot be negative']
     },
     category : {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
         required: [true, 'Category is required'],
         trim: true
      },
