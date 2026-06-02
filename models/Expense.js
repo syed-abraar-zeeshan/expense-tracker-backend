@@ -20,7 +20,6 @@ const expenseSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
         required: [true, 'Category is required'],
-        trim: true
      },
      date : {
         type: Date,
@@ -35,7 +34,8 @@ const expenseSchema = new mongoose.Schema({
     type: {
         type: String,
         enum: ['expense', 'income'],
-        default: 'expense'
+        default: 'expense',
+        required: [true, 'Type is required']
     }
 }, {
     timestamps: true

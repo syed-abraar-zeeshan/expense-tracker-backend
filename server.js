@@ -31,7 +31,7 @@ app.get('/', (req, res) => {
 
 // Routes (we'll uncomment these once we have the route files set up)
 app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/expenses', require('./routes/expenses'));
+app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/categories', require('./routes/categories'));
 
 // Handle unknown routes
