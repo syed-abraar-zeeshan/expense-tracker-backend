@@ -8,12 +8,12 @@ const logger = {
   },
 
   info: (message) => {
-     console.log(`ℹ️  [INFO] ${new Date().toISOString()} - ${message}`);
+    console.log(`ℹ️  [INFO] ${new Date().toISOString()} - ${message}`);
   },
 
   warning: (message) => {
     console.log(`⚠️ [WARNING] ${new Date().toISOString()} - ${message}`);
-  }
-}
+  },
+};
 
 module.exports = logger;

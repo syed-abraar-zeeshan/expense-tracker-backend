@@ -1,11 +1,11 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const logger = require('../config/logger');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const logger = require("../config/logger");
 
 // Generate JWT Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
+    expiresIn: "30d",
   });
 };
 
@@ -20,7 +20,7 @@ const register = async (req, res) => {
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all fields',
+        message: "Please provide all fields",
       });
     }
 
@@ -29,7 +29,7 @@ const register = async (req, res) => {
     if (userExists) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists',
+        message: "User already exists",
       });
     }
 
@@ -40,15 +40,13 @@ const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: "User registered successfully",
       data: {
         id: user.id,
         name: user.name,
         email: user.email,
-       
       },
     });
-
   } catch (error) {
     logger.error(`Register error: ${error.message}`);
     res.status(500).json({
@@ -69,7 +67,7 @@ const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email and password',
+        message: "Please provide email and password",
       });
     }
 
@@ -80,7 +78,7 @@ const login = async (req, res) => {
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password',
+        message: "Invalid email or password",
       });
     }
 
@@ -88,7 +86,7 @@ const login = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       data: {
         id: user.id,
         name: user.name,
@@ -96,7 +94,6 @@ const login = async (req, res) => {
         token: generateToken(user.id),
       },
     });
-
   } catch (error) {
     logger.error(`Login error: ${error.message}`);
     res.status(500).json({
@@ -121,7 +118,6 @@ const getProfile = async (req, res) => {
         email: user.email,
       },
     });
-
   } catch (error) {
     logger.error(`Get profile error: ${error.message}`);
     res.status(500).json({
