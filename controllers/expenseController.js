@@ -91,7 +91,7 @@ const getExpenses = async (req, res) => {
       createdAt: expense.createdAt,
     }));
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: formattedExpenses.length,
       data: formattedExpenses,
@@ -105,4 +105,164 @@ const getExpenses = async (req, res) => {
   }
 };
 
-module.exports = { createExpense, getExpenses };
+// @desc Get single expense
+// @route GET /api/expenses/:id
+// @access Private
+const getExpenseById = async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id)
+      .populate("category", "name icon color")
+      .lean();
+
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: "Expense not found",
+      });
+    }
+
+    if (expense.userId.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    const expenseResponse = {
+      id: expense._id.toString(),
+      title: expense.title,
+      amount: expense.amount,
+      category: {
+        id: expense.category._id.toString(),
+        name: expense.category.name,
+        icon: expense.category.icon,
+        color: expense.category.color,
+      },
+      date: expense.date,
+      note: expense.note,
+      type: expense.type,
+      createdAt: expense.createdAt,
+      updatedAt: expense.updatedAt,
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: expenseResponse,
+    });
+  } catch (error) {
+    logger.error(`Get expense error: ${error.message}`);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+//@desc Update expense
+//@route PUT /api/expenses/:id
+//@access Private
+
+const updateExpense = async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id);
+
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: "Expense not found",
+      });
+    }
+
+    if (expense.userId.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      },
+    ).populate("category", "name icon color");
+
+    const expenseResponse = {
+      id: updatedExpense._id.toString(),
+      title: updatedExpense.title,
+      amount: updatedExpense.amount,
+      category: {
+        id: updatedExpense.category._id.toString(),
+        name: updatedExpense.category.name,
+        icon: updatedExpense.category.icon,
+        color: updatedExpense.category.color,
+      },
+      date: updatedExpense.date,
+      note: updatedExpense.note,
+      type: updatedExpense.type,
+      createdAt: updatedExpense.createdAt,
+      updatedAt: updatedExpense.updatedAt,
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Expense updated successfully",
+      data: expenseResponse,
+    });
+  } catch (error) {
+    logger.error(`Update expense error: ${error.message}`);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+// @desc    Delete expense
+// @route   DELETE /api/expenses/:id
+// @access  Private
+const deleteExpense = async (req, res) => {
+  try {
+    const expense = await Expense.findById(req.params.id);
+
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: "Expense not found",
+      });
+    }
+
+    if (expense.userId.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
+
+    await expense.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Expense deleted successfully",
+    });
+  } catch (error) {
+    logger.error(`Delete expense error: ${error.message}`);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+module.exports = {
+  createExpense,
+  getExpenses,
+  getExpenseById,
+  updateExpense,
+  deleteExpense,
+};
