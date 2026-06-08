@@ -1,30 +1,26 @@
 const Expense = require("../models/Expense");
 const logger = require("../config/logger");
 const Category = require("../models/Category");
+const createError = require("http-errors");
+const mongoose = require("mongoose");
 
 //@desc    Create new expense
 //@route   POST /api/expenses
 //@access  Private
 
-const createExpense = async (req, res) => {
+const createExpense = async (req, res, next) => {
   try {
     const { title, amount, category, date, note, type } = req.body;
 
     // Validate required fields
-    if (!title || !amount || !category || !type) {
-      res.status(400).json({
-        success: false,
-        message: "Please provide all required fields",
-      });
+    if (!title || amount === undefined || !category || !type) {
+      throw createError(400, "Please provide all required fields");
     }
 
     // Check if category exists
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
-      return res.status(400).json({
-        success: false,
-        message: "Catergory not found",
-      });
+      throw createError(400, "Category not found");
     }
 
     // Create new expense
@@ -51,24 +47,21 @@ const createExpense = async (req, res) => {
       createdAt: expense.createdAt,
     };
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Expense created successfully",
       data: expenseResponse,
     });
   } catch (error) {
     logger.error(`Error creating expense: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
 //@desc    Get all expenses for user
 //@route   GET /api/expenses
 //@access  Private
-const getExpenses = async (req, res) => {
+const getExpenses = async (req, res, next) => {
   try {
     const expenses = await Expense.find({ userId: req.user.id })
       .populate("category", "name icon color")
@@ -79,12 +72,14 @@ const getExpenses = async (req, res) => {
       id: expense._id.toString(),
       title: expense.title,
       amount: expense.amount,
-      category: {
-        id: expense.category._id.toString(),
-        name: expense.category.name,
-        icon: expense.category.icon,
-        color: expense.category.color,
-      },
+      category: expense.category
+        ? {
+            id: expense.category._id.toString(),
+            name: expense.category.name,
+            icon: expense.category.icon,
+            color: expense.category.color,
+          }
+        : null,
       date: expense.date,
       note: expense.note,
       type: expense.type,
@@ -98,46 +93,42 @@ const getExpenses = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Error fetching expenses: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
 // @desc Get single expense
 // @route GET /api/expenses/:id
 // @access Private
-const getExpenseById = async (req, res) => {
+const getExpenseById = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      throw createError(400, "Invalid expense id");
+    }
     const expense = await Expense.findById(req.params.id)
       .populate("category", "name icon color")
       .lean();
 
     if (!expense) {
-      return res.status(404).json({
-        success: false,
-        message: "Expense not found",
-      });
+      throw createError(404, "Expense not found");
     }
 
     if (expense.userId.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized",
-      });
+      throw createError(403, "Not authorized");
     }
 
     const expenseResponse = {
       id: expense._id.toString(),
       title: expense.title,
       amount: expense.amount,
-      category: {
-        id: expense.category._id.toString(),
-        name: expense.category.name,
-        icon: expense.category.icon,
-        color: expense.category.color,
-      },
+      category: expense.category
+        ? {
+            id: expense.category._id.toString(),
+            name: expense.category.name,
+            icon: expense.category.icon,
+            color: expense.category.color,
+          }
+        : null,
       date: expense.date,
       note: expense.note,
       type: expense.type,
@@ -152,10 +143,7 @@ const getExpenseById = async (req, res) => {
   } catch (error) {
     logger.error(`Get expense error: ${error.message}`);
 
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
@@ -163,22 +151,19 @@ const getExpenseById = async (req, res) => {
 //@route PUT /api/expenses/:id
 //@access Private
 
-const updateExpense = async (req, res) => {
+const updateExpense = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      throw createError(400, "Invalid expense id");
+    }
     const expense = await Expense.findById(req.params.id);
 
     if (!expense) {
-      return res.status(404).json({
-        success: false,
-        message: "Expense not found",
-      });
+      throw createError(404, "Expense not found");
     }
 
     if (expense.userId.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized",
-      });
+      throw createError(403, "Not authorized");
     }
 
     const updatedExpense = await Expense.findByIdAndUpdate(
@@ -194,12 +179,14 @@ const updateExpense = async (req, res) => {
       id: updatedExpense._id.toString(),
       title: updatedExpense.title,
       amount: updatedExpense.amount,
-      category: {
-        id: updatedExpense.category._id.toString(),
-        name: updatedExpense.category.name,
-        icon: updatedExpense.category.icon,
-        color: updatedExpense.category.color,
-      },
+      category: updatedExpense.category
+        ? {
+            id: updatedExpense.category._id.toString(),
+            name: updatedExpense.category.name,
+            icon: updatedExpense.category.icon,
+            color: updatedExpense.category.color,
+          }
+        : null,
       date: updatedExpense.date,
       note: updatedExpense.note,
       type: updatedExpense.type,
@@ -215,47 +202,38 @@ const updateExpense = async (req, res) => {
   } catch (error) {
     logger.error(`Update expense error: ${error.message}`);
 
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
 // @desc    Delete expense
 // @route   DELETE /api/expenses/:id
 // @access  Private
-const deleteExpense = async (req, res) => {
+const deleteExpense = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      throw createError(400, "Invalid expense id");
+    }
     const expense = await Expense.findById(req.params.id);
 
     if (!expense) {
-      return res.status(404).json({
-        success: false,
-        message: "Expense not found",
-      });
+      throw createError(404, "Expense not found");
     }
 
     if (expense.userId.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized",
-      });
+      throw createError(403, "Not authorized");
     }
 
     await expense.deleteOne();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Expense deleted successfully",
     });
   } catch (error) {
     logger.error(`Delete expense error: ${error.message}`);
 
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+    next(error);
   }
 };
 
