@@ -1,43 +1,34 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const logger = require("../config/logger");
+const createError = require("http-errors");
 
 const protect = async (req, res, next) => {
-  try {
-    let token;
+  let token;
 
-    // Check if token exists in headers
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-
-    // If no token found
-    if (!token) {
-      logger.warning("Access denied - No token provided");
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized, no token",
-      });
-    }
-
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Get user from token
-    req.user = await User.findById(decoded.id).select("-password");
-
-    logger.info(`User authorized: ${req.user.email}`);
-    next();
-  } catch (error) {
-    logger.error(`Auth failed: ${error.message}`);
-    return res.status(401).json({
-      success: false,
-      message: "Not authorized, token failed",
-    });
+  // Check if token exists in headers
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
   }
+
+  // If no token found
+  if (!token) {
+    logger.warn("Access denied - No token provided");
+    throw createError(401, "Not authorized, no token");
+  }
+
+  // Verify token
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+  // Get user from token
+  req.user = await User.findById(decoded.id).select("-password");
+  if (!req.user) throw createError(401, "User not found");
+
+  logger.info(`User authorized: ${req.user.email}`);
+  next();
 };
 
 module.exports = protect;
