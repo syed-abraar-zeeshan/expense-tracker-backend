@@ -26,6 +26,8 @@ connectDB();
 // Initialize Express App
 const app = express();
 
+app.set("trust proxy", 1);
+
 /**
  * Security Middleware
  */
@@ -101,5 +103,5 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  logger.success(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}`);
 });

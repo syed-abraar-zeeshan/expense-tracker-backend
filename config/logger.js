@@ -1,19 +1,17 @@
-const logger = {
-  success: (message) => {
-    console.log(`✅ [SUCCESS] ${new Date().toISOString()} - ${message}`);
-  },
+const pino = require("pino");
 
-  error: (message) => {
-    console.error(`❌ [ERROR] ${new Date().toISOString()} - ${message}`);
-  },
-
-  info: (message) => {
-    console.log(`ℹ️  [INFO] ${new Date().toISOString()} - ${message}`);
-  },
-
-  warning: (message) => {
-    console.log(`⚠️ [WARNING] ${new Date().toISOString()} - ${message}`);
-  },
-};
+const logger = pino({
+  transport:
+    process.env.NODE_ENV !== "production"
+      ? {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:standard",
+            ignore: "pid,hostname",
+          },
+        }
+      : undefined,
+});
 
 module.exports = logger;
