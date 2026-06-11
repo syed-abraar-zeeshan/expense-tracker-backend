@@ -6,18 +6,16 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const createError = require("http-errors");
+const compression = require("compression");
 
 const connectDB = require("./config/db");
 const logger = require("./config/logger");
 const errorHandler = require("./middleware/errorMiddleware");
 
 // Validate Environment Variables
-if (!process.env.MONGO_URI) {
-  throw new Error("MONGO_URI is missing in .env");
-}
-
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET is missing in .env");
+const requiredEnv = ["MONGO_URI", "JWT_SECRET", "EMAIL_USER", "EMAIL_PASS"];
+for (const key of requiredEnv) {
+  if (!process.env[key]) throw new Error(`${key} is missing in .env`);
 }
 
 // Connect Database
@@ -31,13 +29,20 @@ app.set("trust proxy", 1);
 /**
  * Security Middleware
  */
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(",")
+      : "*",
+    credentials: true,
+  }),
+);
 app.use(helmet());
 
 /**
  * Logging
  */
-app.use(morgan("dev"));
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
 /**
  * Body Parsers
@@ -46,9 +51,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /**
- * Prevent MongoDB Operator Injection
+ * Compression
  */
-// app.use(mongoSanitize());
+app.use(compression());
 
 /**
  * Rate Limiting

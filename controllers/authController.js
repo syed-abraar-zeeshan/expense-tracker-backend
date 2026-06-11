@@ -4,6 +4,7 @@ const logger = require("../config/logger");
 const createError = require("http-errors");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
+const sanitize = require("../utils/sanitize");
 
 const {
   registerSchema,
@@ -23,6 +24,7 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 const register = async (req, res) => {
+  sanitize(req.body);
   registerSchema.parse(req.body);
   const { name, email, password } = req.body;
 
@@ -51,6 +53,7 @@ const register = async (req, res) => {
 // @route   POST /api/auth/login
 // @access  Public
 const login = async (req, res) => {
+  sanitize(req.body);
   loginSchema.parse(req.body);
   const { email, password } = req.body;
 
@@ -98,12 +101,16 @@ const getProfile = async (req, res) => {
 // @access  Public
 
 const forgotPassword = async (req, res) => {
+  sanitize(req.body);
   forgotPasswordSchema.parse(req.body);
 
   const { email } = req.body;
   const user = await User.findOne({ email });
   if (!user) {
-    throw createError(404, "User not found");
+    return res.status(200).json({
+      success: true,
+      message: "If this email exists, a reset link has been sent",
+    });
   }
 
   // Generate token
@@ -134,6 +141,7 @@ const forgotPassword = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
+  sanitize(req.body);
   resetPasswordSchema.parse(req.body);
 
   const hashedToken = crypto

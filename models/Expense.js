@@ -43,6 +43,7 @@ const expenseSchema = new mongoose.Schema(
   },
 );
 
-const expense = mongoose.model("Expense", expenseSchema);
+expenseSchema.index({ userId: 1, date: -1 });
+const Expense = mongoose.model("Expense", expenseSchema);
 
-module.exports = expense;
+module.exports = Expense;
