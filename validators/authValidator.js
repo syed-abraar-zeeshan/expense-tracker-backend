@@ -1,4 +1,4 @@
-const { z, email } = require("zod");
+const { z } = require("zod");
 
 const registerSchema = z.object({
   name: z.string().trim().min(3, "Name must be at least 3 characters"),
@@ -6,7 +6,11 @@ const registerSchema = z.object({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
-    .max(50, "Password is too long"),
+    .max(50, "Password is too long")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+      "Password must contain uppercase, lowercase, number and special character",
+    ),
 });
 
 const loginSchema = z.object({
@@ -22,7 +26,11 @@ const resetPasswordSchema = z.object({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
-    .max(50, "Password is too long"),
+    .max(50, "Password is too long")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+      "Password must contain uppercase, lowercase, number and special character",
+    ),
 });
 
 module.exports = {

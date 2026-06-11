@@ -21,11 +21,26 @@ const protect = async (req, res, next) => {
   }
 
   // Verify token
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    throw createError(401, "Not authorized, invalid token");
+  }
 
   // Get user from token
   req.user = await User.findById(decoded.id).select("-password");
   if (!req.user) throw createError(401, "User not found");
+
+  if (req.user.passwordChangedAt) {
+    const changedAt = Math.floor(req.user.passwordChangedAt.getTime() / 1000);
+    if (decoded.iat < changedAt) {
+      throw createError(
+        401,
+        "Password was recently changed. Please log in again.",
+      );
+    }
+  }
 
   logger.info(`User authorized: ${req.user.email}`);
   next();

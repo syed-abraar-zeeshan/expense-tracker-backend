@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    passwordChangedAt: Date,
   },
   {
     timestamps: true,
@@ -34,6 +35,9 @@ userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date(Date.now() - 1000); // ← only on password change
+  }
 });
 
 // Compare entered password with hashed password

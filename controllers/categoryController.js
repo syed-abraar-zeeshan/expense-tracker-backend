@@ -7,7 +7,7 @@ const Category = require("../models/Category");
 const getCategories = async (req, res) => {
   const categories = await Category.find().sort({ name: 1 }).lean();
 
-  const formattedCategories = categories.map((category, index) => ({
+  const formattedCategories = categories.map((category) => ({
     //   categoryId: index + 1,
     id: category._id.toString(),
     name: category.name,

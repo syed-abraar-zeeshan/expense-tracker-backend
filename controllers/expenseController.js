@@ -5,12 +5,14 @@ const createError = require("http-errors");
 const mongoose = require("mongoose");
 const { expenseSchema } = require("../validators/expenseValidator");
 const { formatCategory } = require("../utils/formatters");
+const sanitize = require("../utils/sanitize");
 
 //@desc    Create new expense
 //@route   POST /api/expenses
 //@access  Private
 
 const createExpense = async (req, res) => {
+  sanitize(req.body);
   expenseSchema.parse(req.body);
   const { title, amount, category, date, note, type } = req.body;
 
@@ -34,14 +36,14 @@ const createExpense = async (req, res) => {
     note,
     type,
   });
-
+  await expense.populate("category", "name icon color");
   logger.info(`Expense created successfully by user: ${req.user.id}`);
 
   const expenseResponse = {
     id: expense._id.toString(),
     title: expense.title,
     amount: expense.amount,
-    categoryId: expense.category,
+    categoryId: formatCategory(expense.category),
     date: expense.date,
     note: expense.note,
     type: expense.type,
@@ -59,10 +61,19 @@ const createExpense = async (req, res) => {
 //@route   GET /api/expenses
 //@access  Private
 const getExpenses = async (req, res) => {
-  const expenses = await Expense.find({ userId: req.user.id })
-    .populate("category", "name icon color")
-    .sort({ date: -1 })
-    .lean();
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, parseInt(req.query.limit) || 20);
+  const skip = (page - 1) * limit;
+
+  const [expenses, total] = await Promise.all([
+    Expense.find({ userId: req.user.id })
+      .populate("category", "name icon color")
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Expense.countDocuments({ userId: req.user.id }),
+  ]);
 
   const formattedExpenses = expenses.map((expense) => ({
     id: expense._id.toString(),
@@ -78,6 +89,9 @@ const getExpenses = async (req, res) => {
   return res.status(200).json({
     success: true,
     count: formattedExpenses.length,
+    total,
+    page,
+    pages: Math.ceil(total / limit),
     data: formattedExpenses,
   });
 };
@@ -124,6 +138,7 @@ const getExpenseById = async (req, res) => {
 //@access Private
 
 const updateExpense = async (req, res) => {
+  sanitize(req.body);
   expenseSchema.partial().parse(req.body);
   if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
     throw createError(400, "Invalid expense id");
@@ -145,7 +160,7 @@ const updateExpense = async (req, res) => {
   const updatedExpense = await Expense.findByIdAndUpdate(
     req.params.id,
     { title, amount, category, date, note, type },
-    { new: true, runValidators: true },
+    { returnDocument: "after", runValidators: true },
   ).populate("category", "name icon color");
 
   logger.info(`Expense updated successfully by user: ${req.user.id}`);
