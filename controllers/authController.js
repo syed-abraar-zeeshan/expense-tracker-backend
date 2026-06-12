@@ -126,7 +126,7 @@ const forgotPassword = async (req, res) => {
 
   await user.save();
 
-  const resetUrl = `expensetracker://reset-password/${resetToken}`;
+  const resetUrl = `http://13.201.134.28:4000/api/auth/reset-password/${resetToken}`;
 
   await sendEmail({
     email: user.email,
