@@ -84,24 +84,24 @@ MongoDB Atlas
 <tr>
 <td align="center">
 <b>Login API</b><br><br>
-<img src="screenshots/login_api.png" width="450"/>
+<img src="screenshots/login-api.png" width="450"/>
 </td>
 
 <td align="center">
 <b>Dashboard API</b><br><br>
-<img src="screenshots/dashboard_api.png" width="450"/>
+<img src="screenshots/dashboard-api.png" width="450"/>
 </td>
 </tr>
 
 <tr>
 <td align="center">
 <b>PM2 Process Manager</b><br><br>
-<img src="screenshots/pm2.png" width="450"/>
+<img src="screenshots/pm2_running.png" width="450"/>
 </td>
 
 <td align="center">
 <b>AWS EC2 Deployment</b><br><br>
-<img src="screenshots/aws_ec2.png" width="450"/>
+<img src="screenshots/EC2-running.png" width="450"/>
 </td>
 </tr>
 </table>
