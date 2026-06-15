@@ -78,25 +78,33 @@ MongoDB Atlas
 
 ---
 
-## 📸 Screenshots
+## 📸 Backend Screenshots
 
-### 🔐 Login API
+<table>
+<tr>
+<td align="center">
+<b>Login API</b><br><br>
+<img src="screenshots/login_api.png" width="450"/>
+</td>
 
-![Login API](screenshots/login-api.png)
+<td align="center">
+<b>Dashboard API</b><br><br>
+<img src="screenshots/dashboard_api.png" width="450"/>
+</td>
+</tr>
 
-### 📊 Dashboard API
+<tr>
+<td align="center">
+<b>PM2 Process Manager</b><br><br>
+<img src="screenshots/pm2.png" width="450"/>
+</td>
 
-![Dashboard API](screenshots/dashboard-api.png)
-
-### ⚙️ PM2 Process Manager
-
-![PM2 Running](screenshots/pm2_running.png)
-
-### ☁️ AWS EC2 Deployment
-
-![AWS EC2](screenshots/EC2-running.png)
-
----
+<td align="center">
+<b>AWS EC2 Deployment</b><br><br>
+<img src="screenshots/aws_ec2.png" width="450"/>
+</td>
+</tr>
+</table>
 
 ## 📡 API Endpoints
 
