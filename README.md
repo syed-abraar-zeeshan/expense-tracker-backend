@@ -80,27 +80,29 @@ MongoDB Atlas
 
 ## 📸 Backend Screenshots
 
+Production API testing, deployment, and monitoring screenshots.
+
 <table>
 <tr>
 <td align="center">
-<b>Login API</b><br><br>
+<b>🔐 Login API</b><br><br>
 <img src="screenshots/login-api.png" width="450"/>
 </td>
 
 <td align="center">
-<b>Dashboard API</b><br><br>
+<b>📊 Dashboard API</b><br><br>
 <img src="screenshots/dashboard-api.png" width="450"/>
 </td>
 </tr>
 
 <tr>
 <td align="center">
-<b>PM2 Process Manager</b><br><br>
+<b>⚙️ PM2 Process Manager</b><br><br>
 <img src="screenshots/pm2_running.png" width="450"/>
 </td>
 
 <td align="center">
-<b>AWS EC2 Deployment</b><br><br>
+<b>☁️ AWS EC2 Deployment</b><br><br>
 <img src="screenshots/EC2-running.png" width="450"/>
 </td>
 </tr>
